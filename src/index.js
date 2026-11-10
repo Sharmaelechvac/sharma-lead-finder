@@ -1,6 +1,5 @@
-import { renderPage } from "./html.js";
 import { runLiveAdapters } from "./adapters/index.js";
-import { JURISDICTIONS } from "./counties.js";
+import { JURISDICTIONS, MILES_BASIS } from "./counties.js";
 import { aggregate, STATUSES, slugId } from "./normalize.js";
 
 const CACHE_KEY = "cache:payload";
@@ -16,27 +15,56 @@ async function readJson(kv, key, fallback) {
   }
 }
 
+function withGeo(j, extra = {}) {
+  const out = {
+    id: j.id,
+    name: j.name,
+    kind: j.kind,
+    priority: !!j.priority,
+    alwaysInclude: !!j.alwaysInclude,
+    vendor: j.vendor || extra.vendor || null,
+    portal: j.portal || extra.portal || null,
+    notes: j.notes || extra.notes || null,
+    configuredStatus: j.status,
+    status: extra.status || j.status,
+    lastScan: extra.lastScan ?? null,
+    records: extra.records || 0,
+    error: extra.error ?? null,
+    miles: j.miles,
+    seat: j.seat || null,
+  };
+  if (extra.lastSuccessAt) out.lastSuccessAt = extra.lastSuccessAt;
+  return out;
+}
+
+function countyStatusFrom(result = {}) {
+  return JURISDICTIONS.map((j) => {
+    const run = (result.runs || []).find((r) => r.id === j.id);
+    const prev = (result.countyStatus || []).find((c) => c.id === j.id);
+    if (run) {
+      return withGeo(j, {
+        vendor: j.vendor || run.vendor,
+        status: run.ok ? "live" : run.status,
+        lastScan: run.finishedAt,
+        records: run.records,
+        error: run.error,
+        lastSuccessAt: run.ok ? run.finishedAt : prev?.lastSuccessAt,
+      });
+    }
+    if (prev) return withGeo(j, prev);
+    return withGeo(j);
+  });
+}
+
+function scopePayload(payload) {
+  if (!payload) return payload;
+  return { ...payload, counties: countyStatusFrom({ countyStatus: payload.counties || [], runs: [] }) };
+}
+
 function payloadFrom(result, statusMap) {
   const agg = aggregate(result.records, statusMap);
   const liveSources = result.runs.filter((r) => r.ok).map((r) => `${r.name} (${r.records})`);
-  const countyStatus = result.countyStatus || JURISDICTIONS.map((j) => {
-    const run = (result.runs || []).find((r) => r.id === j.id);
-    return {
-      id: j.id,
-      name: j.name,
-      kind: j.kind,
-      priority: !!j.priority,
-      alwaysInclude: !!j.alwaysInclude,
-      vendor: j.vendor || run?.vendor || null,
-      portal: j.portal || null,
-      notes: j.notes || null,
-      configuredStatus: j.status,
-      status: run ? (run.ok ? "live" : run.status) : j.status,
-      lastScan: run ? run.finishedAt : null,
-      records: run ? run.records : 0,
-      error: run ? run.error : null,
-    };
-  });
+  const countyStatus = countyStatusFrom(result);
   return {
     builders: agg.builders,
     counties: countyStatus,
@@ -102,7 +130,7 @@ async function refresh(env) {
 async function getPayload(env, { force = false } = {}) {
   if (!force) {
     const cached = await readJson(env.LEADS, CACHE_KEY, null);
-    if (cached && Array.isArray(cached.builders)) return cached;
+    if (cached && Array.isArray(cached.builders)) return scopePayload(cached);
   }
   return refresh(env);
 }
@@ -178,20 +206,8 @@ export default {
     if (path === "/api/counties" && request.method === "GET") {
       const payload = await readJson(env.LEADS, CACHE_KEY, null);
       return json({
-        counties: payload ? payload.counties : JURISDICTIONS.map((j) => ({
-          id: j.id,
-          name: j.name,
-          kind: j.kind,
-          priority: !!j.priority,
-          alwaysInclude: !!j.alwaysInclude,
-          vendor: j.vendor || null,
-          portal: j.portal || null,
-          notes: j.notes || null,
-          configuredStatus: j.status,
-          status: j.status,
-          lastScan: null,
-          records: 0,
-        })),
+        milesBasis: MILES_BASIS,
+        counties: countyStatusFrom({ countyStatus: (payload && payload.counties) || [], runs: [] }),
       });
     }
 
@@ -216,7 +232,19 @@ export default {
     }
 
     if (path === "/" || path === "/counties" || path === "/index.html") {
-      return text(renderPage(), 200, "text/html; charset=utf-8");
+      if (env.ASSETS) {
+        const asset = await env.ASSETS.fetch(new URL("/app.html", url));
+        if (asset && asset.status !== 404) {
+          return new Response(asset.body, {
+            status: 200,
+            headers: {
+              "content-type": "text/html; charset=utf-8",
+              "cache-control": "no-store",
+            },
+          });
+        }
+      }
+      return text("Lead Finder UI missing", 500, "text/plain; charset=utf-8");
     }
 
     if (env.ASSETS) {
