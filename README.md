@@ -4,11 +4,15 @@ Phone-first app that finds private and custom home builders currently pulling re
 
 Live app: https://sharma-leads.sharma-crew.workers.dev
 
+## Scope
+
+Florida counties whose county seat is within 150 statute miles of downtown Orlando (28.5383°N, 81.3792°W), plus Lee and Charlotte (both already inside that radius) and the City of Orlando, which has its own permit portal. The Counties page and area filter list only these areas, with the mile figure to the county seat.
+
 ## v1 data
 
 - **Live:** City of Orlando (Socrata open data, residential new *building* permits) and Marion County (Tyler EnerGov, new single-family residences).
-- **Needs browser (no invented data):** Orange (OC FastTrack), Osceola, Brevard, Lee, and Charlotte (Accela). Lee County GIS layers exist but have no contractor names. Lee and Charlotte stay on the county list even outside Central Florida.
-- **All 67 Florida counties** are on the Counties page. Adding a county means adding one adapter config (Socrata, ArcGIS, EnerGov, or Accela).
+- **Needs browser (no invented data):** Orange (OC FastTrack), Osceola, Seminole, Lake, Brevard, Pasco, Polk, Hillsborough, Pinellas, Manatee, Lee, and Charlotte (mostly Accela / FastTrack). Lee County GIS layers exist but have no contractor names.
+- Other in-scope counties are listed as Coming soon until a live or browser-verified adapter is added.
 
 Daily cron (11:00 UTC / 6:00 AM America/New_York) runs all live adapters. If a source fails (the City of Orlando open-data host sometimes blocks Cloudflare Worker IPs), the last successful records for that county are kept.
 
