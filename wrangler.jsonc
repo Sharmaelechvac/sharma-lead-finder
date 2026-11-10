@@ -1,0 +1,19 @@
+{
+  "name": "sharma-leads",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-09",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "kv_namespaces": [
+    {
+      "binding": "LEADS",
+      "id": "e5fee937bb774a9194d31acc715fbcd6"
+    }
+  ],
+  "triggers": {
+    "crons": ["0 11 * * *"]
+  }
+}
