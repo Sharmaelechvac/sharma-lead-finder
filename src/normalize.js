@@ -84,6 +84,27 @@ const PRODUCTION = [
 
 const LOW_PRIORITY = [];
 
+// Verified public enrichment (2026-11-11): phone/website confirmed on the
+// company's own site, a Google Business listing, BBB, or an official permit
+// record. Applied in aggregate() only when the permit data itself is blank.
+// Never guess — companies without a verifiable public value stay blank.
+const ENRICHMENT = {
+  "mattamy-orlando-comp": { phone: "(407) 890-7463", website: "https://mattamyhomes.com/florida/orlando" },
+  "home-energy-group-arcxis": { phone: "(855) 500-3747", website: "https://arcxis.com" },
+  "ici-homes-of-tampa": { phone: "(855) 215-2974", website: "https://icihomes.com" },
+  "ckf-construction-services": { phone: "(904) 517-5939", website: "" },
+  "luih-luxury-homes": { phone: "(689) 243-9699", website: "https://luih.com/" },
+  "capstone-building": { phone: "(205) 803-5226", website: "https://capstonebuilding.com/" },
+  "triple-crown-homes": { phone: "(352) 671-4677", website: "http://www.triplecrownhomes.com/" },
+  "pulte-home": { phone: "", website: "https://www.pulte.com/" },
+  "lennar-homes": { phone: "(305) 559-1951", website: "https://www.lennar.com" },
+  "toll-bros": { phone: "", website: "https://www.tollbrothers.com" },
+  "dream-finders-homes": { phone: "", website: "https://dreamfindershomes.com" },
+  "weekley-homes": { phone: "", website: "https://www.davidweekleyhomes.com/" },
+  "weekley-homes-dba-david-weekly": { phone: "", website: "https://www.davidweekleyhomes.com/" },
+  "mrcela-custom-homes": { phone: "", website: "https://www.mrcela.com/" },
+};
+
 const STATUSES = ["New", "Called", "Interested", "Not interested", "Won"];
 
 export { STATUSES };
@@ -204,6 +225,14 @@ export function aggregate(records, statusMap = {}) {
     if (rec.website && !row.website) row.website = String(rec.website).trim();
     // Prefer a cleaner / longer official-looking name
     if (builder.length > row.name.length && !/d\/b\/a/i.test(builder)) row.name = builder;
+  }
+
+  for (const row of byId.values()) {
+    const enr = ENRICHMENT[row.id];
+    if (enr) {
+      if (!row.phone && enr.phone) row.phone = enr.phone;
+      if (!row.website && enr.website) row.website = enr.website;
+    }
   }
 
   const builders = [...byId.values()].sort((a, b) => {
