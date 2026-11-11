@@ -53,7 +53,7 @@ export const JURISDICTIONS = [
     vendor: "OC FastTrack",
     status: "needs_browser",
     portal: "https://fasttrack.ocfl.net/OnlineServices/permit-building.aspx",
-    notes: "Official search is OC FastTrack (browser session). No public permit open-data / ArcGIS feed was reachable for a Worker pull.",
+    notes: "Official search is OC FastTrack (browser session). Verified 2026-11-11: the county ArcGIS services publish no building-permit layer — no public feed exists.",
   },
   {
     id: "osceola",
@@ -65,7 +65,7 @@ export const JURISDICTIONS = [
     vendor: ACCELA,
     status: "needs_browser",
     portal: "https://permits.osceola.org/CitizenAccess/Cap/CapHome.aspx?module=Building",
-    notes: "Accela Citizen Access; needs a browser session (ASP.NET viewstate).",
+    notes: "Accela Citizen Access; needs a browser session (ASP.NET viewstate). County ArcGIS feed (New_Construction_P_Permits) lists permits but has NO contractor/builder or phone field, so builder names still require the portal.",
   },
   {
     id: "seminole",
@@ -76,6 +76,7 @@ export const JURISDICTIONS = [
     vendor: "Accela-backed Building Public Request Portal",
     status: "needs_browser",
     portal: "https://scwebapp2.seminolecountyfl.gov:6443/BuildingPublicrequestportal/",
+    notes: "Verified 2026-11-11: permitting moved to Accela OneStop (live Oct 19, 2026), account + PIN based; no public permit feed exists.",
   },
   {
     id: "lake",
@@ -83,9 +84,10 @@ export const JURISDICTIONS = [
     kind: "county",
     miles: 28,
     seat: "Tavares",
-    vendor: "County custom Permit Activity Reports (ASP.NET)",
+    vendor: "OpenGov (moved from Accela Mar 3, 2025); county Permit Activity Reports (ASP.NET)",
     status: "needs_browser",
     portal: "https://c.lakecountyfl.gov/offices/building_services/permit_activity_reports/permit_search_by_address.aspx",
+    notes: "Verified 2026-11-11: permitting moved to OpenGov (Mar 3, 2025) with no public record-search API; the county HTML activity reports are the only public route.",
   },
   {
     id: "volusia",
@@ -96,6 +98,7 @@ export const JURISDICTIONS = [
     vendor: "Connect Live",
     status: "coming_soon",
     portal: "https://connectlivepermits.org/citizenportal/app/",
+    notes: "Verified 2026-11-11: Connect Live / AMANDA portal is UI-only; no public machine-readable permit feed with builder names exists.",
   },
   {
     id: "brevard",
@@ -107,9 +110,9 @@ export const JURISDICTIONS = [
     vendor: ACCELA + " (BASS)",
     status: "needs_browser",
     portal: "https://aca-prod.accela.com/BREVARD/Cap/CapHome.aspx?TabName=HOME&module=Building",
-    notes: "Official public search is Accela (Brevard's Advanced Service Site). Requires a browser session; no open-data API found.",
+    notes: "Official public search is Accela (Brevard's Advanced Service Site). Requires a browser session. Verified 2026-11-11: county GIS services carry no permit layer — no open-data API exists.",
   },
-  { id: "sumter", name: "Sumter County", kind: "county", miles: 45, seat: "Bushnell", vendor: "CitizenServe", status: "coming_soon", portal: "https://www.citizenserve.com/Portal/?installationid=445" },
+  { id: "sumter", name: "Sumter County", kind: "county", miles: 45, seat: "Bushnell", vendor: "CitizenServe", status: "needs_browser", portal: "https://www.citizenserve.com/Portal/?installationid=445", notes: "Verified 2026-11-11: CitizenServe reports are interactive HTML only; no public JSON feed." },
   {
     id: "pasco",
     name: "Pasco County",
@@ -129,6 +132,7 @@ export const JURISDICTIONS = [
     vendor: ACCELA,
     status: "needs_browser",
     portal: "https://aca-prod.accela.com/POLKCO/Cap/CapHome.aspx?module=Building",
+    notes: "Verified 2026-11-11: Accela is the only search route; no public permit feed exists.",
   },
   { id: "citrus", name: "Citrus County", kind: "county", miles: 61, seat: "Inverness", status: "coming_soon" },
   {

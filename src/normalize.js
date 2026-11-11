@@ -16,7 +16,9 @@ const DNC_SUBSTR = [
 ];
 
 // "adc" is too short for a substring match — use a word boundary.
-const DNC_WORD = [/\badc\b/i];
+// SAKC / S.A. Casey: skip per Bob Myers (2026-11-11, confirmed by Sanjay) —
+// moved here from LOW_PRIORITY so these builders are hidden, not just flagged.
+const DNC_WORD = [/\badc\b/i, /\bsakc\b/i, /s\.?\s*a\.?\s*casey/i, /sa casey/i];
 
 const PRODUCTION = [
   "lennar",
@@ -80,7 +82,7 @@ const PRODUCTION = [
   "american heritage homes",
 ];
 
-const LOW_PRIORITY = [/\bsakc\b/i, /s\.?\s*a\.?\s*casey/i, /sa casey/i];
+const LOW_PRIORITY = [];
 
 const STATUSES = ["New", "Called", "Interested", "Not interested", "Won"];
 

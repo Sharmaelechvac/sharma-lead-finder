@@ -1,6 +1,1 @@
-{
-  "name": "sharma-lead-finder",
-  "private": true,
-  "version": "1.0.0",
-  "description": "Builder lead finder for Sharma Electric & HVAC"
-}
+{"description":"Builder lead finder for Sharma Electric & HVAC","name":"sharma-lead-finder","private":true,"scripts":{"collect":"node scripts/collect.mjs"},"type":"module","version":"1.1.0"}
