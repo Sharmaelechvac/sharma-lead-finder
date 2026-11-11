@@ -152,7 +152,12 @@ export function isLowPriority(raw) {
 
 export function parseDate(v) {
   if (!v) return null;
+  // ArcGIS date fields arrive as epoch milliseconds (number, or numeric string).
+  if (typeof v === "number" && Number.isFinite(v)) {
+    return new Date(v).toISOString().slice(0, 10);
+  }
   const s = String(v);
+  if (/^\d{12,13}$/.test(s)) return new Date(Number(s)).toISOString().slice(0, 10);
   const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
   if (m) return m[1];
   const t = Date.parse(s);
