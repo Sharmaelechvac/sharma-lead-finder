@@ -379,6 +379,7 @@ let q = "", countySel = "", statusF = "", sortBy = "recent", typeF = "all";
 let hasF = { phone: false, email: false, website: false };
 const EXPANDED = new Set(), COLLAPSED = new Set(), SHOWALL = new Set();
 let RECS = new Map(), BHAY = new Map(), MATCHED = new Map();
+let VISIBLE_RECS = [];
 
 const $ = (s, el=document) => el.querySelector(s);
 const app = $("#app");
@@ -493,6 +494,10 @@ async function load(){
     for(const list of RECS.values()){
       list.sort((a,b) => String(b.date||"") < String(a.date||"") ? -1 : String(b.date||"") > String(a.date||"") ? 1 : 0);
     }
+    // Only permits that belong to a visible builder count anywhere on the page:
+    // records with no builder, and do-not-contact builders' records, stay hidden.
+    const visIds = new Set((DATA.builders||[]).map(b => b.id));
+    VISIBLE_RECS = (DATA.records||[]).filter(r => visIds.has(slugId(r.builder)));
     buildCountyChips();
     buildStatusOptions();
     renderStats();
@@ -528,7 +533,7 @@ function liveCountyCount(){
 function renderStats(){
   if(!DATA){ statsEl.hidden = true; return; }
   const total = (DATA.builders||[]).length;
-  const permits = (DATA.stats && DATA.stats.permits) || (DATA.records||[]).length;
+  const permits = VISIBLE_RECS.length || (DATA.stats && DATA.stats.permits) || 0;
   statsEl.hidden = false;
   statsEl.innerHTML = `
     <div class="stat-tile"><span class="k">Builders</span><span class="n">${total}</span></div>
@@ -637,7 +642,9 @@ function renderBuilders(){
   MATCHED = new Map();
   const list = filteredBuilders();
   for(const b of list){ const m = matchedRecs(b); if(m) MATCHED.set(b.id, m); }
-  const permitsShown = list.reduce((n,b) => n + (b.permitCount||0), 0);
+  const permitsShown = list.reduce((n,b) => n + (countySel
+    ? (RECS.get(b.id)||[]).filter(r => r.county === countySel).length
+    : (b.permitCount||0)), 0);
   const meta = `<p class="meta">Showing <b>${list.length}</b> builder${list.length===1?"":"s"} · <b>${permitsShown}</b> permits${countySel?` in <b>${esc(countySel)}</b>`:""}${q?` matching “${esc(q)}”`:""}</p>`;
   if(!list.length){
     app.innerHTML = meta + '<div class="empty">No builders match. Try a shorter search — a street name, a city, or part of a permit number — or clear the filters above.</div>';
@@ -648,7 +655,7 @@ function renderBuilders(){
 
 function renderPermits(){
   const toks = tokens();
-  let rows = (DATA.records||[]).slice();
+  let rows = VISIBLE_RECS.slice();
   if(countySel) rows = rows.filter(r => r.county === countySel);
   if(toks.length){
     rows = rows.filter(r => {
@@ -717,7 +724,8 @@ function renderCounties(){
         ? `<a href="${esc(c.portal)}" target="_blank" rel="noopener">${esc(c.vendor||"Open portal")}</a>`
         : esc(c.vendor||"");
       const bits = [seat, vendor, c.lastScan ? "Last scan "+fmtEt(c.lastScan) : "", (c.records? c.records+" record"+(c.records===1?"":"s"):""), c.lastSuccessAt && c.status!=="live" ? "Last success "+fmtEt(c.lastSuccessAt) : ""].filter(Boolean);
-      const seeBtn = chipNames.has(c.name) ? `<button type="button" class="see-builders" data-act="county" data-county="${esc(c.name)}">See builders →</button>` : "";
+      const bname = c.name.replace(/ County$/, "");
+      const seeBtn = chipNames.has(bname) ? `<button type="button" class="see-builders" data-act="county" data-county="${esc(bname)}">See builders →</button>` : "";
       return `<article class="county-row">
         <div class="dist ${distClass(c.miles)}"><b>${esc(mi)}</b><span>mi</span></div>
         <div class="cinfo">
