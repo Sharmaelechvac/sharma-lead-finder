@@ -699,7 +699,8 @@ function pills(s){
   return `<span class="pill ${esc(s)}">${esc(label)}</span>`;
 }
 function renderCounties(){
-  const chipNames = new Set(countyCounts().map(([n]) => n));
+  const chipCounts = new Map(countyCounts());
+  const chipNames = new Set(chipCounts.keys());
   const rows = (DATA.counties||[]).slice().sort((a,b)=>{
     const ma = a.miles ?? 9999, mb = b.miles ?? 9999;
     if(ma !== mb) return ma - mb;
@@ -723,8 +724,10 @@ function renderCounties(){
       const vendor = c.portal
         ? `<a href="${esc(c.portal)}" target="_blank" rel="noopener">${esc(c.vendor||"Open portal")}</a>`
         : esc(c.vendor||"");
-      const bits = [seat, vendor, c.lastScan ? "Last scan "+fmtEt(c.lastScan) : "", (c.records? c.records+" record"+(c.records===1?"":"s"):""), c.lastSuccessAt && c.status!=="live" ? "Last success "+fmtEt(c.lastSuccessAt) : ""].filter(Boolean);
       const bname = c.name.replace(/ County$/, "");
+      const vc = chipCounts.get(bname);
+      const countBit = vc != null ? vc+" permit"+(vc===1?"":"s") : (c.records? c.records+" record"+(c.records===1?"":"s"):"");
+      const bits = [seat, vendor, c.lastScan ? "Last scan "+fmtEt(c.lastScan) : "", countBit, c.lastSuccessAt && c.status!=="live" ? "Last success "+fmtEt(c.lastSuccessAt) : ""].filter(Boolean);
       const seeBtn = chipNames.has(bname) ? `<button type="button" class="see-builders" data-act="county" data-county="${esc(bname)}">See builders →</button>` : "";
       return `<article class="county-row">
         <div class="dist ${distClass(c.miles)}"><b>${esc(mi)}</b><span>mi</span></div>
