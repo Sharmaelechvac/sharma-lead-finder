@@ -392,6 +392,10 @@ function card(b){
   if(b.website){
     acts.push(`<a class="act map" href="${esc(b.website)}" target="_blank" rel="noopener">${iconWeb()} Website</a>`);
   }
+  if(b.email){
+    acts.push(`<a class="act map" href="mailto:${esc(b.email)}">${esc(b.email)}</a>`);
+  }
+  const contact = b.contactName ? `<div class="stat"><span>Contact: <b>${esc(b.contactName)}</b>${b.contactTitle?` — ${esc(b.contactTitle)}`:""}</span></div>` : "";
   const chips = STATUSES.map(s=>{
     const cls = s==="Not interested" ? "chip" : "chip "+s.replace(/\s+/g,"");
     return `<button type="button" class="${cls}${s===b.status?" on":""}" data-st="${esc(s)}">${esc(s)}</button>`;
@@ -402,6 +406,7 @@ function card(b){
     <div class="stat"><span><b>${b.permitCount}</b> recent permit${b.permitCount===1?"":"s"}</span>
       <span>Latest ${fmtDate(b.latestDate)}</span></div>
     <ul class="addrs">${addrs}</ul>
+    ${contact}
     ${acts.length?`<div class="actions">${acts.join("")}</div>`:""}
     <div class="chips">${chips}</div>
     <textarea class="notes" placeholder="Notes">${esc(b.notes||"")}</textarea>
