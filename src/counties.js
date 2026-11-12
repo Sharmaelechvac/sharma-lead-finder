@@ -144,7 +144,7 @@ export const JURISDICTIONS = [
     vendor: ENERGOV,
     status: "coming_soon",
     portal: "https://hernandocountyfl-energovweb.tylerhost.net/apps/selfservice#/home",
-    notes: "EnerGov adapter exists; not enabled until a live pull is verified.",
+    notes: "UNLOCKED 2026-11-11 (manual recipe, adapter not yet cfg-driven): API base https://hernandocountyfl-energovweb.tylerhost.net/apps/selfservice/api; tenantId 1, tenantName/Tyler-TenantUrl 'hernandocountyflprod' (from GET /Home/GetTenants). Search: template from GET /energov/search/criteria with SearchModule=2, FilterModule=2, PermitCriteria IssueDateFrom/To, PermitTypeId/PermitStatusId='none'; server ignores TypeId — filter client-side to CaseType 'Residential - New Single Family Construction' and verify dates. Contacts: POST /energov/entity/contacts/search/search {EntityId, ModuleId:1}. Phones come back empty on this tenant. First pull: 82 records (60-day window).",
   },
   {
     id: "marion",
