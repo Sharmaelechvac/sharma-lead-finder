@@ -24,6 +24,7 @@ export const JURISDICTIONS = [
     vendor: "Socrata Open Data",
     status: "live",
     adapter: "socrata",
+    notes: "2026-11-14 collect: adapter got Socrata HTTP 403 (Akamai 'Access Denied') on both JSON and CSV export from this VM while a plain curl with default UA returned 200 for the same query minutes later — the adapter UA 'Mozilla/5.0 (compatible; SharmaLeadFinder/1.0)' is the suspected trigger. Previous 932 records carried forward; +11 new (issues Nov 10–13) merged from a curl pull of the same endpoint (last-30-days window, $limit 200). If the 403 repeats, pull via curl and merge-staged instead.",
     portal: "https://data.cityoforlando.net/d/ryhf-m453",
     cfg: {
       url: "https://data.cityoforlando.net/resource/ryhf-m453.json",
@@ -87,7 +88,7 @@ export const JURISDICTIONS = [
     vendor: "OpenGov (moved from Accela Mar 3, 2025); county Permit Activity Reports (ASP.NET)",
     status: "needs_browser",
     portal: "https://c.lakecountyfl.gov/offices/building_services/permit_activity_reports/permit_search_by_address.aspx",
-    notes: "Verified 2026-11-11: permitting moved to OpenGov (Mar 3, 2025) with no public record-search API; the county HTML activity reports are the only public route.",
+    notes: "Verified 2026-11-11: permitting moved to OpenGov (Mar 3, 2025) with no public record-search API; the county HTML activity reports are the only public route. UPDATE 2026-11-14: permit_report.ashx detail PDFs are RETIRED — root URL now 302-redirects to a 404 error page (even for numbers that worked 2026-11-11, with or without a session cookie). The results grid now links to permit_details.aspx?permit_nbr=<#> ('Certificate Details - Contractor Tracking'), which is CAPTCHA-gated ('enter the text you see in the image') for scripted fetches — detail verification needs a live browser session. The list-level grid still works via ASP.NET postback on permits_issued.aspx (lbPermitTypes=SF, lbCities=All, rblDetails=1 = Normal, txtStartDate/txtEndDate MM/DD/YYYY, harvested __VIEWSTATE/__EVENTVALIDATION). BROWSER UNLOCK 2026-11-14: permit_details.aspx DOES load in a live browser — a reCAPTCHA 'I'm not a robot' checkbox appears before EVERY detail view (11 of 12 cleared on the checkbox alone, 1 needed an image grid). The detail page shows Contractor name + License/Certificate numbers but NO phone field and NO site-address field — take the site address from the list grid and leave phone blank (the list phone is the APPLICANT's, not the contractor's). First browser batch verified 12 permits: 11 merged (9× Pulte Home Company, Davila Homes, Dream Finders Homes) and 1 blank-contractor owner build (2026101223, excluded). Backlog: 85 list-level permits still awaiting detail verification in ~/workspace/lead-finder-fix/staging/lake-remaining91-listlevel.json (issues through 2026-11-13) — workable in browser batches of ~12/session. Coverage: unincorporated Lake + Montverde only.",
   },
   {
     id: "volusia",
@@ -144,7 +145,7 @@ export const JURISDICTIONS = [
     vendor: ENERGOV,
     status: "coming_soon",
     portal: "https://hernandocountyfl-energovweb.tylerhost.net/apps/selfservice#/home",
-    notes: "UNLOCKED 2026-11-11 (manual recipe, adapter not yet cfg-driven): API base https://hernandocountyfl-energovweb.tylerhost.net/apps/selfservice/api; tenantId 1, tenantName/Tyler-TenantUrl 'hernandocountyflprod' (from GET /Home/GetTenants). Search: template from GET /energov/search/criteria with SearchModule=2, FilterModule=2, PermitCriteria IssueDateFrom/To, PermitTypeId/PermitStatusId='none'; server ignores TypeId — filter client-side to CaseType 'Residential - New Single Family Construction' and verify dates. Contacts: POST /energov/entity/contacts/search/search {EntityId, ModuleId:1}. Phones come back empty on this tenant. First pull: 82 records (60-day window).",
+    notes: "UNLOCKED 2026-11-11 (manual recipe, adapter not yet cfg-driven): API base https://hernandocountyfl-energovweb.tylerhost.net/apps/selfservice/api; tenantId 1, tenantName/Tyler-TenantUrl 'hernandocountyflprod' (from GET /Home/GetTenants). Search: template from GET /energov/search/criteria with SearchModule=2, FilterModule=2, PermitCriteria IssueDateFrom/To, PermitTypeId/PermitStatusId='none'; server ignores TypeId — filter client-side to CaseType 'Residential - New Single Family Construction' and verify dates. Contacts: POST /energov/entity/contacts/search/search {EntityId, ModuleId:1}. Phones come back empty on this tenant. First pull: 82 records (60-day window). UPDATE 2026-11-14: search returns Success=false unless PermitCriteria.PageNumber/PageSize/SortBy ('IssueDate') are ALSO set inside PermitCriteria (top-level SortBy='relevance'); address is AddressDisplay / Address.FullAddress (no MainAddress field); contacts endpoint returns empty lists under rapid fire — space calls ~3s. Incremental pull (Oct 20–Nov 14 window): 75 SFR, 18 permits not already loaded, only 4 with a Contractor-type contact (+4 merged: D.R. Horton, Mark King Residential Builder, Maronda Homes, WCM Quality Construction). The other 14 have NO Contractor contact — GC visible only as Superintendent/Owner (Southern Valley Homes ×2, Rocklyn Homes, LGI Homes, rest individual owners / one Owner-Builder) — held out per no-guess rule; permit list saved in staging/2026-11-14/hernando-sfr-list.json. Scripts: ~/workspace/lead-finder-fix/staging/2026-11-14/hernando-pull2.mjs.",
   },
   {
     id: "marion",
@@ -190,7 +191,15 @@ export const JURISDICTIONS = [
   },
   { id: "putnam", name: "Putnam County", kind: "county", miles: 78, seat: "Palatka", status: "coming_soon" },
   { id: "indian-river", name: "Indian River County", kind: "county", miles: 86, seat: "Vero Beach", status: "coming_soon" },
-  { id: "st-johns", name: "St. Johns County", kind: "county", miles: 94, seat: "St. Augustine", status: "coming_soon" },
+  {
+    id: "st-johns",
+    name: "St. Johns County",
+    kind: "county",
+    miles: 94,
+    seat: "St. Augustine",
+    status: "coming_soon",
+    notes: "WATS first pull 2026-11-11: date-filtered SearchPermit (Building Permit, Proposed Use 101 single-family detached) returned 212 for 2026-10-12→11-10; the 100 newest were loaded (98 records after exclusions; contractor column is the license holder's personal name, flipped to natural order; OWNER owner-builder rows excluded). The remaining 112 (2026-10-12→10-29) are still outstanding — the enumeration list and pull recipe were NOT saved from the first pull (checked 2026-11-14), so the window must be re-enumerated from the portal before detail work can resume.",
+  },
   {
     id: "pinellas",
     name: "Pinellas County",
@@ -222,7 +231,7 @@ export const JURISDICTIONS = [
     status: "live",
     adapter: "arcgis",
     portal: "https://services1.arcgis.com/MiBZ4u97DWldovjI/arcgis/rest/services/BuildingPermitsCS/FeatureServer/0",
-    notes: "Official county ArcGIS layer 'Alachua County Building Permits' — ApplicantCompanyName populated; verified live 2026-11-11 (records current to 2026-11-10).",
+    notes: "Official county ArcGIS layer 'Alachua County Building Permits' — ApplicantCompanyName populated; verified live 2026-11-11 (records current to 2026-11-10). ANOMALY 2026-11-14: collect run reported this adapter live with 0 records (transient empty response) while the layer was healthy on direct query minutes later; recovered the same session via a direct ArcGIS pull replicating the adapter query — 500 records (cfg cap), current to 2026-11-13, a superset of the previous 331. If a collect ever reports live-0 for an ArcGIS county, re-query the layer directly before trusting it.",
     cfg: {
       url: "https://services1.arcgis.com/MiBZ4u97DWldovjI/arcgis/rest/services/BuildingPermitsCS/FeatureServer/0",
       county: "Alachua",
@@ -289,7 +298,7 @@ export const JURISDICTIONS = [
     status: "live",
     adapter: "arcgis",
     portal: "https://agis3.charlottecountyfl.gov/arcgis/rest/services/Internal/CCGIS_ComDev_Internal/MapServer/159",
-    notes: "Always included (SW Florida). Switched from Accela to the county's official ArcGIS BuildingPermits layer (BUSINESS_NAME + LICENSE_NBR) — verified live 2026-11-11, current to 2026-11-09. Accela BOCC tenant still exists as a fallback.",
+    notes: "Always included (SW Florida). Switched from Accela to the county's official ArcGIS BuildingPermits layer (BUSINESS_NAME + LICENSE_NBR) — verified live 2026-11-11, current to 2026-11-09. Accela BOCC tenant still exists as a fallback. ANOMALY 2026-11-14: same live-0 collect glitch as Alachua (see Alachua note); recovered via direct pull — 493 unique permits (500-row cap, 7 duplicate RECORD_ID rows in the layer), current to 2026-11-12, a superset of the previous 393.",
     cfg: {
       url: "https://agis3.charlottecountyfl.gov/arcgis/rest/services/Internal/CCGIS_ComDev_Internal/MapServer/159",
       county: "Charlotte",

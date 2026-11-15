@@ -103,6 +103,12 @@ const ENRICHMENT = {
   "weekley-homes": { phone: "", website: "https://www.davidweekleyhomes.com/" },
   "weekley-homes-dba-david-weekly": { phone: "", website: "https://www.davidweekleyhomes.com/" },
   "mrcela-custom-homes": { phone: "", website: "https://www.mrcela.com/" },
+  // Contact enrichment 2026-11-14 (verified on each company's own site / company-issued releases only)
+  "jim-chapman-construction-group": { phone: "(770) 434-3602", website: "https://jimchapmanconstructiongroup.com/", sources: {"phone": "https://www.einpresswire.com/article/870166723/jim-chapman-construction-group-expands-headquarters", "website": "https://jimchapmanconstructiongroup.com/"} },
+  "jhs-builders-dba-christopher-alan-homes": { phone: "(855) 446-9224", website: "https://christopheralanhomes.com/", email: "info@christopheralanhomes.com", sources: {"phone": "https://christopheralanhomes.com/", "website": "https://christopheralanhomes.com/", "email": "https://christopheralanhomes.com/"} },
+  "maronda-homes-of-fl": { phone: "", website: "https://www.maronda.com/", sources: {"website": "https://www.maronda.com/"} },
+  "centex-homes": { phone: "", website: "https://www.centex.com/", sources: {"website": "https://s22.q4cdn.com/957797852/files/doc_news/2019/1.24.19-PulteGroup-Expands-Centex-Brand.pdf"} },
+  "ici-of-gainesville-residential": { phone: "(855) 215-2974", website: "https://icihomes.com", sources: {"phone": "https://icihomes.com", "website": "https://icihomes.com"} },
   // Contact enrichment 2026-11-11 (153 in-territory builders researched in 10 parallel batches;
   // verified public sources only, source URL per field in `sources`; blanks = nothing verified)
   "3cm-construction-ii": {"contactName": "Thomas L. Cavanaugh", "contactTitle": "Manager (Sunbiz annual report signatory) / Registered Agent", "sources": {"contact": "https://static.bizprofile.net/6/9/5/4/2/1/69542172.pdf"}},
