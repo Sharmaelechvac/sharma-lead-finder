@@ -40,7 +40,15 @@ const modeByCounty = new Map();
 for (const run of result.runs || []) {
   const j = JURISDICTIONS.find((x) => x.id === run.id);
   if (j && j.cfg && j.cfg.county) {
-    modeByCounty.set(j.cfg.county, run.ok ? j.cfg.mergeMode || "replace" : "carry");
+    let mode = run.ok ? j.cfg.mergeMode || "replace" : "carry";
+    // Live-0 guard (documented for the ArcGIS counties 2026-11-14): a
+    // "successful" run that returns 0 records while the board already holds
+    // records for the county is a transient empty response, not a deletion
+    // order — carry the previous records forward.
+    if (mode === "replace" && run.ok && run.records === 0 && prevRecords.some((r) => r.county === j.cfg.county)) {
+      mode = "carry";
+    }
+    modeByCounty.set(j.cfg.county, mode);
   }
 }
 const records = [...result.records];

@@ -4,6 +4,8 @@ import { fetchArcgis } from "./arcgis.js";
 import { fetchEnergov } from "./energov.js";
 import { fetchEnergovTyler } from "./energov-tyler.js";
 import { fetchAccela } from "./accela.js";
+import { fetchWats } from "./wats.js";
+import { fetchColumbia } from "./columbia.js";
 
 export const ADAPTERS = {
   socrata: fetchSocrata,
@@ -11,6 +13,8 @@ export const ADAPTERS = {
   energov: fetchEnergov,
   "energov-tyler": fetchEnergovTyler,
   accela: fetchAccela,
+  wats: fetchWats,
+  columbia: fetchColumbia,
 };
 
 export async function runLiveAdapters(onProgress) {
