@@ -24,28 +24,67 @@ try {
 
 const result = await runLiveAdapters(null);
 
-// Carry forward previous records for any jurisdiction whose adapter failed.
+// Record assembly — a collect run must never wipe a county's leads:
+//  - Adapter county, run OK, cfg.mergeMode "replace" (full-window feeds:
+//    Socrata / ArcGIS / Marion EnerGov): fresh records replace previous.
+//  - Adapter county, run OK, cfg.mergeMode "union" (windowed Tyler-hosted
+//    EnerGov sweeps pull only a recent window): fresh records UNION with
+//    previous records for that county, deduped on (county, permitNo),
+//    fresh record wins.
+//  - Adapter county, run FAILED: previous records carry forward.
+//  - County with NO adapter (hand-loaded): previous records carry forward.
+// (Before 2026-11-15 only the failed-adapter case carried forward, so a
+// collect run silently dropped every hand-loaded county.)
 const prevRecords = (prev && prev.records) || [];
-const failed = (result.runs || []).filter((r) => !r.ok);
-const keepCounties = new Set();
-for (const run of failed) {
+const modeByCounty = new Map();
+for (const run of result.runs || []) {
   const j = JURISDICTIONS.find((x) => x.id === run.id);
-  if (j && j.cfg && j.cfg.county) keepCounties.add(j.cfg.county);
+  if (j && j.cfg && j.cfg.county) {
+    modeByCounty.set(j.cfg.county, run.ok ? j.cfg.mergeMode || "replace" : "carry");
+  }
 }
-const carried = prevRecords.filter((r) => keepCounties.has(r.county));
-const records = [...result.records, ...carried];
+const records = [...result.records];
+const seenKeys = new Set(records.map((r) => `${r.county}|${r.permitNo}`));
+for (const r of prevRecords) {
+  const mode = modeByCounty.get(r.county);
+  if (mode === undefined || mode === "carry") {
+    records.push(r);
+  } else if (mode === "union") {
+    const k = `${r.county}|${r.permitNo}`;
+    if (!seenKeys.has(k)) {
+      seenKeys.add(k);
+      records.push(r);
+    }
+  }
+  // "replace": previous records for the county are dropped (fresh pull wins).
+}
 
 const agg = aggregate(records, {});
+const runIds = new Set((result.runs || []).map((r) => r.id));
 const counties = (result.countyStatus || []).map((c) => {
-  const wasCarried = c.status !== "live" && keepCounties.size && records.some((r) => {
-    const j = JURISDICTIONS.find((x) => x.id === c.id);
-    return j && j.cfg && r.county === j.cfg.county;
-  });
-  if (wasCarried) {
-    const prevC = (prev?.counties || []).find((x) => x.id === c.id);
-    if (prevC) return { ...c, records: prevC.records || c.records, lastSuccessAt: prevC.lastSuccessAt || prevC.lastScan || null };
+  const prevC = (prev?.counties || []).find((x) => x.id === c.id);
+  if (!runIds.has(c.id)) {
+    // No adapter ran for this jurisdiction (hand-loaded or not yet tapped):
+    // preserve its previous display state so the board doesn't regress.
+    if (prevC && (prevC.records || 0) > 0) {
+      return { ...c, status: prevC.status || c.status, records: prevC.records, error: null, lastSuccessAt: prevC.lastSuccessAt || prevC.lastScan || null };
+    }
+    return c;
   }
-  return c.status === "live" ? { ...c, lastSuccessAt: c.lastScan } : c;
+  if (c.status !== "live" && prevC) {
+    // Adapter failed: records were carried forward — keep prior counts.
+    const j = JURISDICTIONS.find((x) => x.id === c.id);
+    const n = j && j.cfg ? records.filter((r) => r.county === j.cfg.county).length : 0;
+    if (n > 0) return { ...c, records: n, lastSuccessAt: prevC.lastSuccessAt || prevC.lastScan || null };
+  }
+  if (c.status === "live") {
+    // Report the county's total on the board (union counties exceed the
+    // single-run count), not just this run's fresh records.
+    const j = JURISDICTIONS.find((x) => x.id === c.id);
+    const n = j && j.cfg ? records.filter((r) => r.county === j.cfg.county).length : c.records;
+    return { ...c, records: n, lastSuccessAt: c.lastScan };
+  }
+  return c;
 });
 
 const payload = {

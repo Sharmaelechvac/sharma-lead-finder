@@ -2,12 +2,14 @@ import { JURISDICTIONS, liveJurisdictions } from "../counties.js";
 import { fetchSocrata } from "./socrata.js";
 import { fetchArcgis } from "./arcgis.js";
 import { fetchEnergov } from "./energov.js";
+import { fetchEnergovTyler } from "./energov-tyler.js";
 import { fetchAccela } from "./accela.js";
 
 export const ADAPTERS = {
   socrata: fetchSocrata,
   arcgis: fetchArcgis,
   energov: fetchEnergov,
+  "energov-tyler": fetchEnergovTyler,
   accela: fetchAccela,
 };
 
