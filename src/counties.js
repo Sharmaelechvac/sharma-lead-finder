@@ -54,7 +54,7 @@ export const JURISDICTIONS = [
     vendor: "OC FastTrack",
     status: "needs_browser",
     portal: "https://fasttrack.ocfl.net/OnlineServices/permit-building.aspx",
-    notes: "Official search is OC FastTrack (browser session). Verified 2026-11-11 and RE-VERIFIED 2026-11-15 (full sweep of the county ArcGIS server + ArcGIS Online): the county publishes NO building-permit layer and no open-data permit feed with builder names exists. PRIORITY for a browser-session tap: core territory, 0 records. (City of Orlando Socrata is a separate jurisdiction, live on this board.)",
+    notes: "Official search is OC FastTrack (browser session). Verified 2026-11-11 and RE-VERIFIED 2026-11-15 (full sweep of the county ArcGIS server + ArcGIS Online): the county publishes NO building-permit layer and no open-data permit feed with builder names exists. BROWSER UNLOCK 2026-11-17: FastTrack's text CAPTCHA cleared on first attempt in a live browser; anonymous issue-date-range search works (max 6-month range, results capped at first 500 rows, NO type/occupancy filter — filter by OCC='01 Single Family' + WORK='New Construction' + B-prefix permit numbers in the results, then open each detail page: contractor name + license + mailing address under PEOPLE DETAILS, NO phone anywhere). First browser batch: 2 verified SFR building permits issued 2026-11-17 (both Pulte Home Company LLC) merged; the 500-row cap means narrow windows (weekly) are needed to enumerate a full period. Still needs_browser — no scripted route past the CAPTCHA. (City of Orlando Socrata is a separate jurisdiction, live on this board.)",
   },
   {
     id: "osceola",
@@ -296,7 +296,7 @@ export const JURISDICTIONS = [
     status: "live",
     adapter: "arcgis",
     portal: "https://services1.arcgis.com/MiBZ4u97DWldovjI/arcgis/rest/services/BuildingPermitsCS/FeatureServer/0",
-    notes: "Official county ArcGIS layer 'Alachua County Building Permits' — ApplicantCompanyName populated; verified live 2026-11-11 (records current to 2026-11-10). ANOMALY 2026-11-14: collect run reported this adapter live with 0 records (transient empty response) while the layer was healthy on direct query minutes later; recovered the same session via a direct ArcGIS pull replicating the adapter query — 500 records (cfg cap), current to 2026-11-13, a superset of the previous 331. If a collect ever reports live-0 for an ArcGIS county, re-query the layer directly before trusting it.",
+    notes: "Official county ArcGIS layer 'Alachua County Building Permits' — ApplicantCompanyName populated; verified live 2026-11-11 (records current to 2026-11-10). ANOMALY 2026-11-14: collect run reported this adapter live with 0 records (transient empty response) while the layer was healthy on direct query minutes later; recovered the same session via a direct ArcGIS pull replicating the adapter query — 500 records (cfg cap), current to 2026-11-13, a superset of the previous 331. ROOT CAUSE FOUND 2026-11-17: the arcgis adapter queried the bare layer URL without the /query suffix — ArcGIS answers that with layer metadata (no features, no error), so the adapter returned 0 every run; adapter fixed 2026-11-17 to append /query. The 2026-11-17 collect still reported live-0 (pre-fix code); recovered the same session via a direct /query pull at pageSize 500 — 500 records (cap), current to 2026-11-17, +1 new vs board. Next collect should return Alachua live through the adapter itself.",
     cfg: {
       url: "https://services1.arcgis.com/MiBZ4u97DWldovjI/arcgis/rest/services/BuildingPermitsCS/FeatureServer/0",
       county: "Alachua",
@@ -399,7 +399,7 @@ export const JURISDICTIONS = [
     status: "live",
     adapter: "arcgis",
     portal: "https://agis3.charlottecountyfl.gov/arcgis/rest/services/Internal/CCGIS_ComDev_Internal/MapServer/159",
-    notes: "Always included (SW Florida). Switched from Accela to the county's official ArcGIS BuildingPermits layer (BUSINESS_NAME + LICENSE_NBR) — verified live 2026-11-11, current to 2026-11-09. Accela BOCC tenant still exists as a fallback. ANOMALY 2026-11-14: same live-0 collect glitch as Alachua (see Alachua note); recovered via direct pull — 493 unique permits (500-row cap, 7 duplicate RECORD_ID rows in the layer), current to 2026-11-12, a superset of the previous 393.",
+    notes: "Always included (SW Florida). Switched from Accela to the county's official ArcGIS BuildingPermits layer (BUSINESS_NAME + LICENSE_NBR) — verified live 2026-11-11, current to 2026-11-09. Accela BOCC tenant still exists as a fallback. ANOMALY 2026-11-14: same live-0 collect glitch as Alachua (see Alachua note); recovered via direct pull — 493 unique permits (500-row cap, 7 duplicate RECORD_ID rows in the layer), current to 2026-11-12, a superset of the previous 393. 2026-11-17: same live-0 in collect (adapter /query bug — see Alachua note, fixed in the adapter 2026-11-17); recovered via direct /query pull — 493 unique permits, current to 2026-11-13, +26 new vs board.",
     cfg: {
       url: "https://agis3.charlottecountyfl.gov/arcgis/rest/services/Internal/CCGIS_ComDev_Internal/MapServer/159",
       county: "Charlotte",

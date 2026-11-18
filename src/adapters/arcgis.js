@@ -14,7 +14,11 @@ export async function fetchArcgis(cfg, log = []) {
   const records = [];
   let offset = 0;
   while (records.length < maxRecords) {
-    const url = new URL(cfg.url);
+    // cfg.url is the layer URL (…/FeatureServer/0); the query endpoint is
+    // …/0/query. Without the /query suffix ArcGIS returns layer metadata
+    // (no features, no error) — the root cause of the recurring live-0
+    // anomaly documented 2026-11-14 and root-caused 2026-11-17.
+    const url = new URL(cfg.url.replace(/\/+$/, "") + "/query");
     url.searchParams.set("f", "json");
     url.searchParams.set("where", cfg.where || "1=1");
     url.searchParams.set("outFields", cfg.outFields || "*");
