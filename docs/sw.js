@@ -1,12 +1,12 @@
-/*! Sharma design kit v1.2 service worker. Copy to the app as /sw.js and call SK.registerSW("/sw.js").
+/*! Sharma design kit v1.3 service worker. Copy to the app as /sw.js and call SK.registerSW("/sw.js").
    What it does:
-   - App shell ("/sharma-lead-finder/") : network first (so a locked or expired phone goes to the lock screen), saved copy if
+   - App shell ("/") : network first (so a locked or expired phone goes to the lock screen), saved copy if
      there is no signal or the network takes over 2.5 s. Only a real unlocked page is saved.
    - Kit files (css, js, logo): served from the phone at once, refreshed in the background.
    - Never touches: /login, /logout (it wipes saved data first), /api/* (the app's SK.data handles
      last-data-first in the page), POSTs, or anything else.
    Holds no data, passcodes or keys. */
-var VERSION = "sk-shell-v1.2";
+var VERSION = "sk-shell-v1.3";
 var DATA = "sk-data-v1";
 var KIT = new URL((new URL(self.location.href).searchParams.get("kit") || "https://sharma-kit.sharma-crew.workers.dev").replace(/\/$/, ""), self.location.href).href.replace(/\/$/, "");
 var KIT_FILES = [KIT + "/sharma-kit.css", KIT + "/sharma-kit.js", KIT + "/assets/logo-white-header.png"];
@@ -64,7 +64,7 @@ self.addEventListener("fetch", function (e) {
   var url = new URL(req.url);
   if (req.url.indexOf(KIT + "/") === 0 && /\.(css|js|png|svg)$/.test(url.pathname)) { e.respondWith(kitFile(e)); return; }
   if (url.origin === self.location.origin) {
-    if (url.pathname === "/logout") { e.respondWith(wipe().then(function () { return fetch(req); })); return; }
+    if (url.pathname === "/sharma-lead-finder/logout") { e.respondWith(wipe().then(function () { return fetch(req); })); return; }
     if (url.pathname === "/sharma-lead-finder/" && req.mode === "navigate") { e.respondWith(shell(req)); return; }
     return; /* /login, /api/*, everything else: straight to the network, never saved here */
   }
