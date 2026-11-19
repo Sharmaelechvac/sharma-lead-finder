@@ -1,10 +1,12 @@
 <!doctype html>
-<html lang="en" class="sk" data-scheme="light">
+<html lang="en" class="sk">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sharma Lead Finder</title>
 <meta name="theme-color" content="#264387">
+  <meta name="color-scheme" content="light">
+  <script>(function(){try{if(localStorage.getItem("sk-scheme")==="dark"){var d=document.documentElement;d.setAttribute("data-scheme","dark");var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=d.getAttribute("data-theme")==="track"?"#1C1C1E":"#1a2f61"}}catch(e){}})()</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,6 +16,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="https://sharma-kit.sharma-crew.workers.dev/assets/favicon-32.png">
 <link rel="stylesheet" href="https://sharma-kit.sharma-crew.workers.dev/sharma-kit.css">
 <script src="https://sharma-kit.sharma-crew.workers.dev/sharma-kit.js" defer></script>
+  <script src="logos/logos.js"></script>
 <style>
   :root {
     --navy: #071828;
@@ -331,7 +334,7 @@
   #filter-sheet .chiprow { margin-bottom: 12px; }
   #filter-sheet .selrow { display: flex; gap: 12px; flex-wrap: wrap; }
   #filter-sheet .selrow select { min-height: 44px; font-size: 16px; }
-</style>
+.co-name{display:flex;align-items:center;gap:8px}.co-badge{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;background:#264387;color:#fff;font-size:13px;font-weight:800;flex:none}.co-logo{position:relative;display:inline-block;width:30px;height:30px;flex:none}.co-logo .co-badge{position:absolute;inset:0}.co-logo img{position:absolute;inset:0;width:30px;height:30px;border-radius:8px;object-fit:contain;background:#fff}</style>
 </head>
 <body class="sk">
 <header class="sk-header"><div class="sk-header__bar">
@@ -621,6 +624,9 @@ function permitRow(r, hits, idx){
     <span class="no">${hl(r.permitNo || "")}</span>
   </div>`;
 }
+function logoInitials(name){ const w = String(name||"").replace(/[^A-Za-z0-9 ]/g," ").split(/\s+/).filter(Boolean); if(!w.length) return "?"; return (w[0][0] + (w.length>1 ? w[1][0] : "")).toUpperCase(); }
+function normCo(name){ return String(name||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(); }
+function companyLogo(name){ const f = (window.APP_LOGOS||{})[normCo(name)]; const badge = '<span class="co-badge" aria-hidden="true">' + logoInitials(name) + '</span>'; if(!f) return badge; return '<span class="co-logo">' + badge + '<img src="logos/' + f + '" alt="" loading="lazy" onerror="this.remove()"></span>'; }
 function card(b){
   const hot = (b.permitCount||0) >= HOT_MIN;
   const recs = RECS.get(b.id) || [];
@@ -650,7 +656,7 @@ function card(b){
     </button>
     ${open ? `<div class="perm-list">${shown.map((r) => permitRow(r, hits, recs.indexOf(r))).join("")}${!showAll && recs.length > PERMITS_PREVIEW ? `<button type="button" class="showall" data-act="show-all">Show all ${recs.length} permits</button>` : ""}</div>` : ""}` : "";
   return `<article class="card${hot?" hot":""}" data-id="${esc(b.id)}">
-    <h2>${hl(b.name)}</h2>
+    <h2 class="co-name">${companyLogo(b.name)}<span>${hl(b.name)}</span></h2>
     <div class="badges">${badges}</div>
     <div class="stat"><span><b>${b.permitCount}</b> recent permit${b.permitCount===1?"":"s"}</span>
       <span>Latest ${fmtDate(b.latestDate)}</span></div>
@@ -699,7 +705,7 @@ function renderPermits(){
   app.innerHTML = meta + `<div class="flat-list">${rows.map(r => `
     <div class="frow">
       <span class="d">${fmtDate(r.date)}</span>
-      <span class="a"><button type="button" class="who" data-act="jump-builder" data-name="${esc(cleanName(r.builder))}">${hl(cleanName(r.builder))}</button>
+      <span class="a">${companyLogo(cleanName(r.builder))} <button type="button" class="who" data-act="jump-builder" data-name="${esc(cleanName(r.builder))}">${hl(cleanName(r.builder))}</button>
       <small>${hl(r.address || "—")} · ${esc(r.county || "")}</small></span>
       <span class="no">${hl(r.permitNo || "")}</span>
     </div>`).join("")}</div>`;
@@ -865,6 +871,25 @@ app.addEventListener("change", ev => {
 
 load();
 </script>
-<script>if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) { addEventListener("load", function(){ navigator.serviceWorker.register("sw.js?kit=https://sharma-kit.sharma-crew.workers.dev").catch(function(){}); }); }</script>
+<script>if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) { addEventListener("load", function(){ navigator.serviceWorker.register("sw.js?kit=https://sharma-kit.sharma-crew.workers.dev", { scope: "/sharma-lead-finder/" }).catch(function(){}); }); }</script>
+<section class="sk-sheet" id="more-sheet" aria-label="More">
+  <div class="sk-sheet__grab"></div>
+  <div class="sk-sheet__head"><button type="button" class="sk-btn sk-btn--text" data-sheet-close>Close</button><div class="sk-sheet__title">More</div><span></span></div>
+  <div class="sk-sheet__body">
+    <div class="<redacted>"><span>Display</span></div>
+    <div class="sk-list" id="appearance"></div>
+    <div class="sk-list" style="margin-top:14px">
+      <div class="sk-row"><div class="sk-row__body"><div class="sk-row__title">Lead Finder</div><div class="sk-row__sub">Builders and permits across Sharma's 11 counties</div></div></div>
+      <div class="sk-row"><div class="sk-row__body"><div class="sk-row__title">Licenses</div><div class="sk-row__sub">EC13013924 · CAC1823596</div></div></div>
+    </div>
+  </div>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  if (window.SK && SK.scheme) SK.scheme.mountToggle(document.getElementById("appearance"));
+  var g = document.getElementById("gearBtn");
+  if (g) g.addEventListener("click", function(){ if (window.SK && SK.openSheet) SK.openSheet("more-sheet"); });
+});
+</script>
 </body>
 </html>
