@@ -1,0 +1,17 @@
+{
+  "name": "Lead Finder · Sharma Electric & HVAC",
+  "short_name": "Leads",
+  "description": "Builders pulling new-home permits in Sharma's territory.",
+  "id": "./",
+  "start_url": "./?source=homescreen",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2F4F8",
+  "theme_color": "#264387",
+  "icons": [
+    { "src": "https://sharma-kit.sharma-crew.workers.dev/assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "https://sharma-kit.sharma-crew.workers.dev/assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "https://sharma-kit.sharma-crew.workers.dev/assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
