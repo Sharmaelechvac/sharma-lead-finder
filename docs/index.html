@@ -1,11 +1,19 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="sk">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sharma Lead Finder</title>
-<link rel="icon" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
+<meta name="theme-color" content="#264387">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Leads">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="https://sharma-kit.sharma-crew.workers.dev/assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://sharma-kit.sharma-crew.workers.dev/assets/favicon-32.png">
+<link rel="stylesheet" href="https://sharma-kit.sharma-crew.workers.dev/sharma-kit.css">
+<script src="https://sharma-kit.sharma-crew.workers.dev/sharma-kit.js" defer></script>
 <style>
   :root {
     --navy: #071828;
@@ -312,18 +320,27 @@
   @media (prefers-reduced-motion: reduce) {
     .act, .chip, .fchip, .perm-toggle .chev { transition: none; }
   }
+
+  /* --- Sharma kit v1.2 rollout overrides (Batch A) --- */
+  .pill { font-size: 13px; }
+  .fchip { min-height: 44px; }
+  #viewnav { display: flex; gap: 6px; max-width: 1180px; margin: 0 auto; padding: 10px 20px 0; }
+  #viewnav button { min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-weight: 700; font-size: 15px; color: var(--ink); }
+  #viewnav button.active { background: #264387; color: #fff; border-color: #264387; }
+  .morebtn { display: block; margin: 14px auto; min-height: 44px; padding: 0 22px; }
+  #filter-sheet .chiprow { margin-bottom: 12px; }
+  #filter-sheet .selrow { display: flex; gap: 12px; flex-wrap: wrap; }
+  #filter-sheet .selrow select { min-height: 44px; font-size: 16px; }
 </style>
 </head>
-<body>
-<header>
-  <div class="head">
-    <img src="logo.png" alt="Sharma Electric &amp; HVAC" onerror="this.style.display='none'">
-    <div>
-      <h1>Sharma Lead Finder</h1>
-      <p>Builders pulling new-home permits — search by builder, address, city, permit # or phone</p>
-    </div>
-  </div>
-</header>
+<body class="sk">
+<header class="sk-header"><div class="sk-header__bar">
+  <div class="sk-header__lead"><a class="sk-header__logo" href="./"><img src="https://sharma-kit.sharma-crew.workers.dev/assets/logo-white-header.png" alt="Sharma Electric &amp; HVAC" width="103" height="20"></a></div>
+  <div class="sk-header__title">Lead Finder</div>
+  <div class="sk-header__trail"></div>
+</div></header>
+<div class="sk-offline"></div>
+<div class="sk-pagehead" style="max-width:1180px;margin:0 auto;padding-left:20px;padding-right:20px"><div><h1 class="sk-title">Sharma Lead Finder</h1><p class="sk-note">Builders pulling new-home permits — search by builder, address, city, permit # or phone</p></div></div>
 <div class="stats" id="stats" hidden></div>
 <nav id="viewnav">
   <button type="button" data-view="builders" class="active">Builders</button>
@@ -338,6 +355,7 @@
       <input id="q" type="search" autocomplete="off" placeholder="Search builder, address, city, permit #, phone…">
       <button type="button" class="xbtn" id="qclear" hidden aria-label="Clear search">×</button>
     </div>
+    <button type="button" class="sk-btn sk-btn--secondary" id="filtersBtn" style="width:auto;padding:0 18px">Filters</button>
   </div>
   <div class="chiprow" id="countychips" aria-label="Filter by area"></div>
   <div class="chiprow" id="typechips" aria-label="Filter by type and contact info">
@@ -365,12 +383,18 @@
   <button type="button" class="clearbtn" id="clearall" hidden>Clear all filters ×</button>
 </div>
 
-<div class="wrap" id="app"><p class="meta">Loading…</p></div>
+<section class="sk-sheet" id="filter-sheet" aria-label="Filters">
+  <div class="sk-sheet__grab"></div>
+  <div class="sk-sheet__head"><button type="button" class="sk-btn sk-btn--text" data-sheet-close>Close</button><div class="sk-sheet__title">Filters</div><span></span></div>
+  <div class="sk-sheet__body" id="filter-sheet-body"></div>
+</section>
+<div class="wrap" id="app"><div class="sk-skel" style="height:110px;margin-bottom:10px"></div><div class="sk-skel" style="height:110px;margin-bottom:10px"></div><div class="sk-skel" style="height:110px"></div></div>
 <footer>Sharma Electric &amp; HVAC · Lic. EC13013924 · CAC1823596</footer>
 <script>
 const STATUSES = ["New","Called","Interested","Not interested","Won"];
 const HOT_MIN = 8;
 const PERMITS_PREVIEW = 6;
+let BUILDER_LIMIT = 25, PERMIT_LIMIT = 25, KEEP_LIMITS = false;
 const FLAT_LIMIT = 200;
 const MILES_BASIS = "Distances are statute miles from downtown Orlando (28.5383°N, 81.3792°W) to each county seat. City of Orlando is 0.";
 let DATA = null;
@@ -650,7 +674,8 @@ function renderBuilders(){
     app.innerHTML = meta + '<div class="empty">No builders match. Try a shorter search — a street name, a city, or part of a permit number — or clear the filters above.</div>';
     return;
   }
-  app.innerHTML = meta + `<div class="grid">${list.map(card).join("")}</div>`;
+  const shownList = list.slice(0, BUILDER_LIMIT);
+  app.innerHTML = meta + `<div class="grid">${shownList.map(card).join("")}</div>` + (list.length > BUILDER_LIMIT ? `<button type="button" class="showall morebtn" data-act="more-builders">Show more builders (${list.length - BUILDER_LIMIT} more)</button>` : "");
 }
 
 function renderPermits(){
@@ -665,7 +690,7 @@ function renderPermits(){
   }
   rows.sort((a,b) => String(b.date||"").localeCompare(String(a.date||"")));
   const total = rows.length;
-  rows = rows.slice(0, FLAT_LIMIT);
+  rows = rows.slice(0, Math.min(PERMIT_LIMIT, FLAT_LIMIT));
   const meta = `<p class="meta">Showing <b>${rows.length}</b> of <b>${total}</b> permits, newest first${countySel?` in <b>${esc(countySel)}</b>`:""}${q?` matching “${esc(q)}”`:""}. Tap a builder name to open its card.</p>`;
   if(!rows.length){
     app.innerHTML = meta + '<div class="empty">No permits match. Try clearing the filters above.</div>';
@@ -678,6 +703,7 @@ function renderPermits(){
       <small>${hl(r.address || "—")} · ${esc(r.county || "")}</small></span>
       <span class="no">${hl(r.permitNo || "")}</span>
     </div>`).join("")}</div>`;
+  if(total > rows.length){ app.innerHTML += `<button type="button" class="showall morebtn" data-act="more-permits">Show more permits (${total - rows.length} more)</button>`; }
 }
 
 function distClass(m){
@@ -746,6 +772,8 @@ function renderCounties(){
 }
 
 function render(){
+  if(!KEEP_LIMITS){ BUILDER_LIMIT = 25; PERMIT_LIMIT = 25; }
+  KEEP_LIMITS = false;
   if(!DATA){ app.innerHTML = '<p class="meta">Loading…</p>'; return; }
   if(VIEW === "counties") renderCounties();
   else if(VIEW === "permits") renderPermits();
@@ -765,6 +793,8 @@ function saveLocal(id, nextStatus, nextNotes){
 document.querySelectorAll("#viewnav button").forEach(btn => {
   btn.addEventListener("click", () => { VIEW = btn.dataset.view; syncControls(); render(); window.scrollTo({ top: 0 }); });
 });
+(() => { const body = $("#filter-sheet-body"); ["#countychips", "#typechips"].forEach(sel => { const el = $(sel); if(el) body.appendChild(el); }); const sel = document.querySelector(".selrow"); if(sel) body.appendChild(sel); const clr = $("#clearall"); if(clr) body.appendChild(clr); })();
+$("#filtersBtn").addEventListener("click", () => { if(window.SK && SK.openSheet) SK.openSheet("filter-sheet"); });
 $("#q").addEventListener("input", ev => { q = ev.target.value; $("#qclear").hidden = !q; $("#clearall").hidden = !filtersActive(); render(); });
 $("#qclear").addEventListener("click", () => { q = ""; syncControls(); render(); $("#q").focus(); });
 $("#countychips").addEventListener("click", ev => {
@@ -802,6 +832,10 @@ app.addEventListener("click", ev => {
     syncControls(); render(); window.scrollTo({ top: 0 });
     return;
   }
+  const moreB = ev.target.closest('[data-act="more-builders"]');
+  if(moreB){ BUILDER_LIMIT += 25; KEEP_LIMITS = true; render(); return; }
+  const moreP = ev.target.closest('[data-act="more-permits"]');
+  if(moreP){ PERMIT_LIMIT += 25; KEEP_LIMITS = true; render(); return; }
   const cardEl = ev.target.closest(".card[data-id]");
   if(!cardEl) return;
   const id = cardEl.dataset.id;
@@ -831,5 +865,6 @@ app.addEventListener("change", ev => {
 
 load();
 </script>
+<script>if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) { addEventListener("load", function(){ navigator.serviceWorker.register("sw.js?kit=https://sharma-kit.sharma-crew.workers.dev").catch(function(){}); }); }</script>
 </body>
 </html>
