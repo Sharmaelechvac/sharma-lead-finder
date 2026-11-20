@@ -1,0 +1,14 @@
+/* macOS wide-screen look (Sanjay 2026-11-19) — presentation only, active at >=960px.
+   Phone layout/behaviour unchanged. Sidebar = the app's existing #viewnav
+   (Builders / Latest permits / Counties). Lead Finder does not load the Sharma
+   kit, so it uses its own palette variables. */
+::selection{background:rgba(12,44,76,.16)}
+@media (min-width:960px){
+  :root{--mac-side:238px}
+  body{padding-left:var(--mac-side)}
+  #viewnav{position:fixed;top:0;bottom:0;left:0;width:var(--mac-side);max-width:none;margin:0;padding:14px 10px;background:#f2f6fb;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px;flex-wrap:nowrap;z-index:40;align-content:flex-start}
+  #viewnav button{width:100%;text-align:left;border-radius:8px;box-shadow:none;font-size:14px;padding:0 12px;min-height:36px;background:transparent}
+  #viewnav button:hover{background:#e2ebf5;transform:none}
+  #viewnav button.active{background:var(--navy-2);color:#fff;box-shadow:none}
+  .bcard:hover,.card:hover{border-color:#b9cbdd}
+}
