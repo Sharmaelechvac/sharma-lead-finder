@@ -69,3 +69,44 @@ self.addEventListener("fetch", function (e) {
     return; /* /login, /api/*, everything else: straight to the network, never saved here */
   }
 });
+/*! Sharma push — service worker handlers (append to the app's existing sw.js).
+   Purely additive: two new event listeners. They do not touch the install /
+   activate / fetch handlers above them, so the kit shell caching behaves
+   exactly as before. Payload shape comes from the push worker's /send:
+   { type, title, body, url } (all optional except body text). */
+
+self.addEventListener("push", function (e) {
+  var data = {};
+  if (e.data) {
+    try { data = e.data.json() || {}; }
+    catch (err) { data = { body: e.data.text() }; }
+  }
+  var title = data.title || "Sharma Electric & HVAC";
+  var opts = {
+    body: data.body || "",
+    data: { url: data.url || self.registration.scope, type: data.type || "" },
+    tag: data.tag || data.type || undefined
+  };
+  if (data.icon) opts.icon = data.icon;
+  if (data.badge) opts.badge = data.badge;
+  e.waitUntil(self.registration.showNotification(title, opts));
+});
+
+self.addEventListener("notificationclick", function (e) {
+  e.notification.close();
+  var target = (e.notification.data && e.notification.data.url) || self.registration.scope;
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (list) {
+      var want;
+      try { want = new URL(target, self.location.origin); } catch (err) { want = null; }
+      for (var i = 0; i < list.length; i++) {
+        var c = list[i];
+        try {
+          var u = new URL(c.url);
+          if (want && u.origin === want.origin && u.pathname === want.pathname && "focus" in c) return c.focus();
+        } catch (err) {}
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(target);
+    })
+  );
+});
