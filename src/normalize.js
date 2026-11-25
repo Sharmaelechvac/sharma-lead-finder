@@ -113,6 +113,8 @@ const ENRICHMENT = {
   "america-s-home-place": { phone: "(800) 247-4663", website: "https://www.americashomeplace.com/", sources: {"phone": "https://www.americashomeplace.com/", "website": "https://www.americashomeplace.com/"} },
   "coaston-homes": { phone: "(941) 552-6705", website: "https://www.coastonhomes.com/", sources: {"phone": "Google Business listing for Coaston Homes, Sarasota FL (2026-11-20)", "website": "https://www.coastonhomes.com/"} },
   "adams-homes-of-northwest-florida": { phone: "(850) 934-0470", website: "https://www.adamshomes.com/", sources: {"phone": "https://www.adamshomes.com/communities/florida/spring-hill/winding-oaks", "website": "https://www.adamshomes.com/"} },
+  // Contact enrichment 2026-11-23 (Heinz Group: website verified on its own site; phone from its Google Business listing)
+  "heinz-group": { phone: "(407) 624-2900", website: "https://www.theheinzgrp.com/", sources: {"phone": "Google Business listing for The Heinz Group, Windermere FL (2026-11-23)", "website": "https://www.theheinzgrp.com/"} },
   // Contact enrichment 2026-11-11 (153 in-territory builders researched in 10 parallel batches;
   // verified public sources only, source URL per field in `sources`; blanks = nothing verified)
   "3cm-construction-ii": {"contactName": "Thomas L. Cavanaugh", "contactTitle": "Manager (Sunbiz annual report signatory) / Registered Agent", "sources": {"contact": "https://static.bizprofile.net/6/9/5/4/2/1/69542172.pdf"}},
